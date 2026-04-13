@@ -73,9 +73,9 @@ export async function ticketRoutes(fastify: FastifyInstance): Promise<void> {
     return proxyToTicketService(`/tickets/${id}`, 'DELETE', req, reply);
   });
 
-  // POST /api/tickets/:id/comments — agregar comentario (requiere tickets:move)
+  // POST /api/tickets/:id/comments — agregar comentario (requiere autenticación)
   fastify.post('/api/tickets/:id/comments', {
-    preHandler: [authenticate, requirePermission('tickets:move')],
+    preHandler: [authenticate],
   }, async (req, reply) => {
     const { id } = req.params as { id: string };
     return proxyToTicketService(`/tickets/${id}/comments`, 'POST', req, reply);
