@@ -77,6 +77,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
     // El frontend guarda este token en cookie y lo envía en cada request
     const token = fastify.jwt.sign({
       sub:                user.id,
+      name:               user.name,
       email:              user.email,
       globalPermissions:  user.globalPermissions  ?? [],
       permissionsByGroup: user.permissionsByGroup ?? {},
