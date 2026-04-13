@@ -1,0 +1,69 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────
+#  docker-compose.yml — ERP-SDA completo
+#
+#  Levanta todos los servicios en red interna `erp-net`.
+#  Los servicios internos (user, group, ticket) NO están expuestos
+#  al host — solo el Gateway tiene puerto público (3000).
+#
+#  Uso:
+#    docker compose up --build
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── API Gateway (Fastify) ───────────────────────────────────────
+  gateway:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV:            production
+      PORT:                3000
+      JWT_SECRET:          ${JWT_SECRET}
+      USER_SERVICE_URL:    http://user-service:3001
+      GROUP_SERVICE_URL:   http://group-service:3002
+      TICKET_SERVICE_URL:  http://ticket-service:3003
+      CORS_ORIGINS:        http://localhost:4200
+    depends_on:
+      - user-service
+      - group-service
+      - ticket-service
+    networks:
+      - erp-net
+    restart: unless-stopped
+
+  # ── User Service (Go) ───────────────────────────────────────────
+  user-service:
+    # build: ../erp-user-service    # ← descomentar cuando exista
+    image: alpine                   # placeholder hasta Fase 4
+    command: ["echo", "User service placeholder"]
+    expose:
+      - "3001"
+    networks:
+      - erp-net
+
+  # ── Group Service (Go) ──────────────────────────────────────────
+  group-service:
+    # build: ../erp-group-service   # ← descomentar cuando exista
+    image: alpine
+    command: ["echo", "Group service placeholder"]
+    expose:
+      - "3002"
+    networks:
+      - erp-net
+
+  # ── Ticket Service (Fastify) ────────────────────────────────────
+  ticket-service:
+    # build: ../erp-ticket-service  # ← descomentar cuando exista
+    image: alpine
+    command: ["echo", "Ticket service placeholder"]
+    expose:
+      - "3003"
+    networks:
+      - erp-net
+
+networks:
+  erp-net:
+    driver: bridge
