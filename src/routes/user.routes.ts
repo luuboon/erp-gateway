@@ -45,9 +45,9 @@ async function proxyToUserService(
 
 export async function userRoutes(fastify: FastifyInstance): Promise<void> {
 
-  // GET /api/users — listar usuarios (requiere users:manage)
+  // GET /api/users — listar usuarios (solo requiere estar autenticado)
   fastify.get('/api/users', {
-    preHandler: [authenticate, requirePermission('users:manage')],
+    preHandler: [authenticate],
   }, async (req, reply) => proxyToUserService('/users', 'GET', req, reply));
 
   // GET /api/users/:id — ver usuario
