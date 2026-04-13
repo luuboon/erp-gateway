@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { OP_CODES } from '../types/index.js';
+import { OP_CODES, JwtPayload } from '../types/index.js';
 
 // authenticate — verifica el JWT en el header Authorization.
 // Si es válido, popula req.user con el payload.
@@ -9,19 +9,8 @@ export async function authenticate(
   reply: FastifyReply,
 ): Promise<void> {
   try {
-    const payload = await request.jwtVerify<{
-      sub:                string;
-      email:              string;
-      globalPermissions:  string[];
-      permissionsByGroup: Record<string, string[]>;
-    }>();
-
-    request.user = {
-      sub:                payload.sub,
-      email:              payload.email,
-      globalPermissions:  payload.globalPermissions  ?? [],
-      permissionsByGroup: payload.permissionsByGroup ?? {},
-    };
+    await request.jwtVerify();
+    // jwtVerify popula request.user automáticamente
   } catch {
     reply.status(401).send({
       statusCode: 401,
@@ -44,7 +33,7 @@ export function requirePermission(permission: string) {
     request: FastifyRequest,
     reply: FastifyReply,
   ): Promise<void> {
-    const user = request.user;
+    const user = request.user as JwtPayload | undefined;
     if (!user) {
       reply.status(401).send({
         statusCode: 401,
@@ -56,13 +45,13 @@ export function requirePermission(permission: string) {
     }
 
     // Verificar en globalPermissions
-    if (user.globalPermissions.includes(permission)) return;
+    if ((user.globalPermissions ?? []).includes(permission)) return;
 
     // Verificar en el grupo activo (viene del param :groupId si existe)
     const params = request.params as Record<string, string>;
     const groupId = params?.groupId;
     if (groupId) {
-      const groupPerms = user.permissionsByGroup[groupId] ?? [];
+      const groupPerms = (user.permissionsByGroup ?? {})[groupId] ?? [];
       if (groupPerms.includes(permission)) return;
     }
 

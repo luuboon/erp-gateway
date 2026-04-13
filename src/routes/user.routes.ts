@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticate, requirePermission } from '../hooks/auth.hook.js';
 import { config } from '../config/env.js';
-import { OP_CODES } from '../types/index.js';
+import { OP_CODES, JwtPayload } from '../types/index.js';
 
 // Helper para reenviar un request al User Service con los headers internos
 async function proxyToUserService(
@@ -12,14 +12,14 @@ async function proxyToUserService(
 ) {
   const url = `${config.services.user}${path}`;
 
-  // Headers que el User Service espera:
   // X-Gateway-Secret → identifica que viene del Gateway
   // X-User-Id        → quién está haciendo el request (para auditoría)
+  const user = request.user as JwtPayload;
   const headers: Record<string, string> = {
     'Content-Type':     'application/json',
     'X-Gateway-Secret': config.gatewaySecret,
-    'X-User-Id':        request.user?.sub        ?? '',
-    'X-User-Email':     request.user?.email       ?? '',
+    'X-User-Id':        user?.sub        ?? '',
+    'X-User-Email':     user?.email       ?? '',
   };
 
   const options: RequestInit = { method, headers };

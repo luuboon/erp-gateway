@@ -28,9 +28,3 @@ export interface JwtPayload {
   exp?:               number;
 }
 
-// Extensión de FastifyRequest para que TypeScript conozca req.user
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: JwtPayload;
-  }
-}
