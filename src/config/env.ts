@@ -13,6 +13,7 @@ const EnvSchema = z.object({
   RATE_LIMIT_MAX:       z.coerce.number().default(100),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
   CORS_ORIGINS:         z.string().default('http://localhost:4200'),
+  LOG_DATABASE_URL:     z.string().min(1, 'LOG_DATABASE_URL es requerido'),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
@@ -42,4 +43,5 @@ export const config = {
   cors: {
     origins:   parsed.data.CORS_ORIGINS.split(',').map(o => o.trim()),
   },
+  logDatabaseURL: parsed.data.LOG_DATABASE_URL,
 } as const;

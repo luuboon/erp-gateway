@@ -6,6 +6,8 @@ import { userRoutes }   from './routes/user.routes.js';
 import { groupRoutes }  from './routes/group.routes.js';
 import { ticketRoutes } from './routes/ticket.routes.js';
 import { OP_CODES } from './types/index.js';
+import { onRequestHook, onResponseHook, onErrorHook } from './hooks/logging.hook.js';
+import { adminRoutes } from './routes/admin.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const fastify = Fastify({
@@ -16,6 +18,11 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Plugins globales
   await fastify.register(globalPlugins);
+
+  // Hooks de logging — se ejecutan en cada request
+  fastify.addHook('onRequest', onRequestHook);
+  fastify.addHook('onResponse', onResponseHook);
+  fastify.addHook('onError', onErrorHook);
 
   // Healthcheck — sin autenticación
   fastify.get('/health', async () => ({
@@ -31,6 +38,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   fastify.register(userRoutes);
   fastify.register(groupRoutes);
   fastify.register(ticketRoutes);
+
+  // Rutas de administración (logs y métricas)
+  fastify.register(adminRoutes);
 
   // Handler global de errores
   fastify.setErrorHandler((error, _request, reply) => {
