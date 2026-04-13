@@ -72,4 +72,20 @@ export async function groupRoutes(fastify: FastifyInstance): Promise<void> {
     const { id } = req.params as { id: string };
     return proxyToGroupService(`/groups/${id}`, 'DELETE', req, reply);
   });
+
+  // POST /api/groups/:id/members — agregar miembro
+  fastify.post('/api/groups/:id/members', {
+    preHandler: [authenticate, requirePermission('groups:manage')],
+  }, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    return proxyToGroupService(`/groups/${id}/members`, 'POST', req, reply);
+  });
+
+  // DELETE /api/groups/:id/members/:userId — quitar miembro
+  fastify.delete('/api/groups/:id/members/:userId', {
+    preHandler: [authenticate, requirePermission('groups:manage')],
+  }, async (req, reply) => {
+    const { id, userId } = req.params as { id: string; userId: string };
+    return proxyToGroupService(`/groups/${id}/members/${userId}`, 'DELETE', req, reply);
+  });
 }
