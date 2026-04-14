@@ -47,12 +47,18 @@ export function requirePermission(permission: string) {
     // Verificar en globalPermissions
     if ((user.globalPermissions ?? []).includes(permission)) return;
 
-    // Verificar en el grupo activo (viene del param :groupId si existe)
     const params = request.params as Record<string, string>;
-    const groupId = params?.groupId;
+    const groupId = params?.groupId ?? params?.id;
+
     if (groupId) {
+      // Verificar en el grupo específico de la URL
       const groupPerms = (user.permissionsByGroup ?? {})[groupId] ?? [];
       if (groupPerms.includes(permission)) return;
+    } else {
+      // Sin groupId — verificar si tiene el permiso en CUALQUIER grupo
+      // Cubre rutas como POST /api/groups donde no hay groupId previo
+      const allGroupPerms = Object.values(user.permissionsByGroup ?? {}).flat();
+      if (allGroupPerms.includes(permission)) return;
     }
 
     reply.status(403).send({
