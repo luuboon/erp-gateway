@@ -39,14 +39,14 @@ async function proxyToTicketService(
 
 export async function ticketRoutes(fastify: FastifyInstance): Promise<void> {
 
-  // GET /api/tickets — listar tickets (requiere tickets:view)
+  // GET /api/tickets — listar tickets (solo autenticación)
   fastify.get('/api/tickets', {
-    preHandler: [authenticate, requirePermission('tickets:view')],
+    preHandler: [authenticate],
   }, async (req, reply) => proxyToTicketService('/tickets', 'GET', req, reply));
 
-  // GET /api/tickets/:id — detalle de ticket
+  // GET /api/tickets/:id — detalle de ticket (solo autenticación)
   fastify.get('/api/tickets/:id', {
-    preHandler: [authenticate, requirePermission('tickets:view')],
+    preHandler: [authenticate],
   }, async (req, reply) => {
     const { id } = req.params as { id: string };
     return proxyToTicketService(`/tickets/${id}`, 'GET', req, reply);
