@@ -54,6 +54,11 @@ export function requirePermission(permission: string) {
       // Verificar en el grupo específico de la URL
       const groupPerms = (user.permissionsByGroup ?? {})[groupId] ?? [];
       if (groupPerms.includes(permission)) return;
+
+      // Fallback: si no está en ese grupo (ej. grupo recién creado cuyo ID
+      // aún no está en el JWT), verificar en cualquier grupo del usuario
+      const allGroupPerms = Object.values(user.permissionsByGroup ?? {}).flat();
+      if (allGroupPerms.includes(permission)) return;
     } else {
       // Sin groupId — verificar si tiene el permiso en CUALQUIER grupo
       // Cubre rutas como POST /api/groups donde no hay groupId previo
